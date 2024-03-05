@@ -99,9 +99,11 @@ ggplot(data = comm_df, aes(x = year_of_interconnection,
        y = "System Size (kW-AC)") + 
   theme_minimal() +
   scale_fill_brewer(palette="Spectral") +
+  theme(legend.position="bottom") +
   scale_x_continuous(breaks = 2011:2021) #show all years
 
 # put system size into perspective with population size? kw/household in city? # households in city?
+# Put boundaries on projects to see how big individual projects are
 ```
 
 
