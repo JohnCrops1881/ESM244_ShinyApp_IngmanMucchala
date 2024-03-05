@@ -60,9 +60,10 @@ EJ_score <- county_sunroof_lead_sf %>%
   mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% 
   mutate(sunlight_score = ifelse(yearly_sunlight_kwh_median>=20000, 1, 0)) %>% 
   mutate(income_score = ifelse(household_income<=91905, 1, 0)) %>% 
-  mutate(qualified_score = ifelse(percent_qualified>=85, 1, 0)) %>% 
+  mutate(qualified_score = ifelse(percent_qualified>=90, 1, 0)) %>% 
   mutate(EJ_score = E_burden_score + sunlight_score + income_score + qualified_score) %>% 
-  select(name, geometry, E_burden_score, sunlight_score, income_score, qualified_score, EJ_score)
+  select(name, geometry, E_burden_score, sunlight_score, income_score, qualified_score, EJ_score) %>% 
+  filter(!st_is_empty(geometry))
 
 # if want to specifcy thresholds:
 # yearly sunlight total kwh (total solar energy generation potential for all roof space): >10^8 kwh? bias against smaller counties
@@ -74,23 +75,27 @@ EJ_score <- county_sunroof_lead_sf %>%
 
 ```{r}
 CSL_energy_burden <- county_sunroof_lead_sf %>% 
-  select(c(geometry, energy_burden_percent_income))
+  select(c(geometry, energy_burden_percent_income)) %>% 
+  filter(!st_is_empty(geometry))
 
 CSL_sunlight <- county_sunroof_lead_sf %>% 
-  select(c(geometry, yearly_sunlight_kwh_median))
+  select(c(geometry, yearly_sunlight_kwh_median)) %>% 
+   filter(!st_is_empty(geometry))
 
 CSL_income <- county_sunroof_lead_sf %>% 
-  select(c(geometry, household_income))
+  select(c(geometry, household_income)) %>% 
+  filter(!st_is_empty(geometry))
 
 CSL_qualified <- county_sunroof_lead_sf %>% 
-  select(c(geometry, percent_qualified))
+  select(c(geometry, percent_qualified)) %>% 
+  filter(!st_is_empty(geometry))
 
 # county_sunroof_lead_score = placeholder thresholds (our score recs)
 ```
 
 
 ```{r}
-#| fig-cap: "Counties in gray do not have data for median sunlight or percent of households qualified, meaning we cannot assign a comparative EJ score. However, scores for energy burden and household income are available."
+#| fig-cap: "County Energy Justice Score. Counties in gray do not have data for median sunlight or percent of households qualified, meaning we cannot assign a comparative EJ score. However, scores for energy burden and household income are available."
 
 tmap_mode("view") 
 
@@ -110,13 +115,13 @@ tm_shape(CSL_energy_burden) +
   tm_polygons('percent_qualified', palette= c("darkorchid4", "chocolate1"), 
                            title='Percent of Solar-Qualified Households',
                            border.col='grey27', alpha=.9) +
-    tm_shape(county_sunroof_lead_score) +
+    tm_shape(EJ_score) +
   tm_polygons('EJ_score', palette= c("YlGnBu"), 
                            title='EJ Score',
                            border.col='grey27', alpha=.9) +
   tmap_options(max.categories= 57) +
   tm_view(view.legend.position = c("right", "top"))+
-  tm_layout(title= 'Solar Potential: Environmental Justice Score', 
+  tm_layout(title= 'Solar Potential: Energy Justice Score', 
             title.position = c('right', 'top'))
 
 # need to get EJ score as discrete on tmap

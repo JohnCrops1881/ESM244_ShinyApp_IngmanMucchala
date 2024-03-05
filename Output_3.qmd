@@ -4,6 +4,8 @@ format: html
 editor: visual
 ---
 
+TEXT: Here, we map California's 2011-2021 community solar projects. There are only 13 projects, all inland, with the most in Bakersfield County. 
+
 ```{r}
 library(tidyverse)
 library(tsibble)
@@ -44,8 +46,12 @@ View(city_comm_sf)
 city_comm_sf_short <- city_comm_sf %>% 
   select(project_name, name, lat.x, long, county_fips, utility, utility_type, system_size_k_w_ac, system_size_mw_ac, geometry, population.x)
 
-plot(city_comm_sf_short %>% 
-       select(system_size_mw_ac)) 
+# plot(city_comm_sf_short %>% 
+#        select(system_size_mw_ac)) 
+```
+
+```{r}
+#| fig-cap: "Community Solar Projects by System Size"
 
 ggplot() + 
   geom_sf(data = county_sf) +
@@ -67,10 +73,14 @@ ggplot() +
 # ass3 df for data and df for predictions
 # predict(nls_model, newdata=list(doy=seq(147,306)))
 ```
+
+
 ```{r}
+#| fig-cap: "Community Solar Projects by System Size"
+
 tmap_mode("view") 
 
-tm_shape(county_df) + 
+tm_shape(county_sf) + 
   tm_polygons()+
 tm_shape(city_comm_sf_short) +
   tm_dots(size = 0.02) +
