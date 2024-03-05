@@ -81,14 +81,14 @@ tm_layout(title= 'System Size',
 
 ```{r}
 ggplot(data = comm_df, aes(x = year_of_interconnection, 
-                            y = system_size_mw_ac,
-                            color = utility)) +
+                           y = system_size_mw_ac, 
+                           fill=utility)) +
   geom_col() +
   labs(x = "Year of Interconnection",
        title = "California Community Projects Over Time",
-       y = "System Size (kW-AC)", 
-       color = "Utility") +
+       y = "System Size (kW-AC)") + 
   theme_minimal() +
+  scale_fill_brewer(palette="Spectral") +
   scale_x_continuous(breaks = 2011:2021) #show all years
 
 # put system size into perspective with population size? kw/household in city? # households in city?
