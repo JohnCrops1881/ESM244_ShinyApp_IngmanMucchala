@@ -68,7 +68,7 @@ combined_plot <- plot_grid(plot_residential, plot_nem, nrow = 1)
 print(combined_plot)
 
 ```
-
+##
 
 ```{r}
 ts_data <- ts(utility_nem_df$total_residential, start = c(1990), frequency = 1)
@@ -82,3 +82,11 @@ plot_trends
 
 ```
 
+
+## Group 1: 3 utilities and Group 2: Other IOUs, look at slope of linear regression across both the groups, compare the slopes to see the statistical different. Is there difference ? Is there simple linear regression
+
+
+- Set of A utilities , in Linear Regression take a interaction terms between utility group A or B  ~ year |f1 <-  energy consum ~ year + group
+f2<- energy consum ~ year * group 
+
+- Give a mechanistic reason for why 
