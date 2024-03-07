@@ -53,6 +53,7 @@ ggplot() +
   theme_void() +
   labs(fill = 'Energy Burden (% of Income)')
 ```
+
 ```{r}
 # scores
 
@@ -71,7 +72,6 @@ EJ_score <- county_sunroof_lead_sf %>%
 # household income: <$91,905 (2022 CA median household income)
 # # households and count qualified (# buildings solar suitable): -> # suitable buildings divided by #households (rough similarity) *100 = %suitable buildings -> >50%? prioritize counties with high solar potential?
 ```
-
 
 ```{r}
 CSL_energy_burden <- county_sunroof_lead_sf %>% 
@@ -92,7 +92,6 @@ CSL_qualified <- county_sunroof_lead_sf %>%
 
 # county_sunroof_lead_score = placeholder thresholds (our score recs)
 ```
-
 
 ```{r}
 #| fig-cap: "County Energy Justice Score. Counties in gray do not have data for median sunlight or percent of households qualified, meaning we cannot assign a comparative EJ score. However, scores for energy burden and household income are available."
@@ -126,15 +125,3 @@ tm_shape(CSL_energy_burden) +
 
 # need to get EJ score as discrete on tmap
 ```
-
-
-
-
-
-
-
-
-
-
-
-
