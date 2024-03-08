@@ -90,6 +90,7 @@ tm_layout(title= 'System Size',
 ```
 
 ```{r}
+#
 ggplot(data = comm_df, aes(x = year_of_interconnection, 
                            y = system_size_mw_ac, 
                            fill=utility)) +
