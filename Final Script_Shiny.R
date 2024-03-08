@@ -65,17 +65,17 @@ ui <- dashboardPage(
       tabItem(tabName = "output3",
               fluidPage(
                 titlePanel("Community Solar Analysis"),
-                sidebarLayout(
-                  sidebarPanel(
-                    selectInput("plotType", "Select Plot Type:",
-                                choices = c("tmap", "ggplot2"),
-                                selected = "tmap")
-                  ),
+                # sidebarLayout(
+                #   # sidebarPanel(
+                #   #   selectInput("plotType", "Select Plot Type:",
+                #   #               choices = c("tmap", "ggplot2"),
+                #   #               selected = "tmap")
+                #   ),
                   mainPanel(
-                    plotOutput("community_plot")
-                )
-              )
-              )
+                    tmapOutput("community_plot")
+                ) #end main panel
+              ) #end fluid page
+              ) #end tab item
       ),
       tabItem(tabName = "output4",
               fluidRow(
@@ -104,8 +104,8 @@ ui <- dashboardPage(
               )
       )
     )
-  )
-)
+) #end dashboard page
+
 
 
 # Defining the server logic
@@ -238,8 +238,8 @@ server <- function(input, output) {
     select(project_name, name, lat.x, long, county_fips, utility, utility_type, system_size_k_w_ac, system_size_mw_ac, geometry, population.x)
   ## output 3
   
-  output$community_plot <- renderPlot({
-    if (input$plotType == "tmap") {
+  output$community_plot <- renderTmap({
+    # if (input$plotType == "tmap") {
       tmap_mode("view")
       tm_shape(county_sf) + 
         tm_polygons() +
@@ -247,21 +247,26 @@ server <- function(input, output) {
         tm_dots(size = 0.02) +
         tm_view(view.legend.position = c("right", "top")) +
         tm_layout(title = 'System Size', title.position = c('right', 'top'))
-    } else {
-      ggplot(data = comm_df, aes(x = year_of_interconnection, 
-                                 y = system_size_mw_ac,
-                                 color = utility)) +
-        geom_col() +
-        labs(x = "Year of Interconnection",
-             title = "California Community Projects Over Time",
-             y = "System Size (kW-AC)", 
-             color = "Utility") +
-        theme_minimal() +
-        scale_x_continuous(breaks = 2011:2021) #show all years
-    }
+  
+    
+    
+    #else {
+    #   ggplot(data = comm_df, aes(x = year_of_interconnection, 
+    #                              y = system_size_mw_ac,
+    #                              color = utility)) +
+    #     geom_col() +
+    #     labs(x = "Year of Interconnection",
+    #          title = "California Community Projects Over Time",
+    #          y = "System Size (kW-AC)", 
+    #          color = "Utility") +
+    #     theme_minimal() +
+    #     scale_x_continuous(breaks = 2011:2021) #show all years
+
+    
+    # return(community_plot)
   })
   
-}
+} #end server
 
 # Run the application
 shinyApp(ui = ui, server = server)
