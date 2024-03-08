@@ -55,7 +55,7 @@ ggplot() +
 ```
 
 ```{r}
-# scores
+# scores #
 
 EJ_score <- county_sunroof_lead_sf %>% 
   mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% 
