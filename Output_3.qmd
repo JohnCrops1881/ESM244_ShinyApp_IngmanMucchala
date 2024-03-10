@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-TEXT: Here, we map California's 2011-2021 community solar projects. There are only 13 projects, all inland, with the most in Bakersfield County. 
+TEXT: Here, we map California's 2011-2021 community solar projects. There are only 13 projects, all inland, with the most in Bakersfield County.
 
 ```{r}
 library(tidyverse)
@@ -26,7 +26,7 @@ cities_sf <- read_sf(here("data", "CA_cities_pts2", "CA_cities_pts2.shp")) %>%
 comm_df <- read_csv(here("data", "Community_Solar_CA.csv")) %>% 
   janitor::clean_names()
 
-county_sf <- read_sf(here("data", "ca_counties", "CA_Counties_TIGER2016.shp")) %>% 
+Counties <- read_sf(here("data", "ca_counties", "CA_Counties_TIGER2016.shp")) %>% 
   janitor::clean_names() %>% 
   select(c(name, geometry))
 ```
@@ -43,7 +43,7 @@ city_comm_sf <- full_join(cities_sf, comm_df, by=c("name"="city")) %>%
 View(city_comm_sf)
 # lost Anza and Herlong, need better city data
 
-city_comm_sf_short <- city_comm_sf %>% 
+Projects <- city_comm_sf %>% 
   select(project_name, name, lat.x, long, county_fips, utility, utility_type, system_size_k_w_ac, system_size_mw_ac, geometry, population.x)
 
 # plot(city_comm_sf_short %>% 
@@ -54,8 +54,8 @@ city_comm_sf_short <- city_comm_sf %>%
 #| fig-cap: "Community Solar Projects by System Size"
 
 ggplot() + 
-  geom_sf(data = county_sf) +
-  geom_sf(data = city_comm_sf_short, aes(color = system_size_mw_ac), size = 2) + # size = border
+  geom_sf(data = Counties) +
+  geom_sf(data = Projects, aes(color = system_size_mw_ac), size = 2) + # size = border
   scale_fill_gradientn(colors = c('darkorchid4', 'chocolate1')) + #not working
   theme_void() +
   labs(fill = 'System Size (MW-AC)')
@@ -74,16 +74,15 @@ ggplot() +
 # predict(nls_model, newdata=list(doy=seq(147,306)))
 ```
 
-
 ```{r}
 #| fig-cap: "Community Solar Projects by System Size"
 
 tmap_mode("view") 
 
-tm_shape(county_sf) + 
-  tm_polygons()+
-tm_shape(city_comm_sf_short) +
-  tm_dots(size = 0.02) +
+tm_shape(Counties) + 
+  tm_polygons() +
+tm_shape(Projects) +
+  tm_dots(size = 0.02, palette=('BuGn')) +
 tm_view(view.legend.position = c("right", "top"))+
 tm_layout(title= 'System Size', 
             title.position = c('right', 'top'))
@@ -100,28 +99,11 @@ ggplot(data = comm_df, aes(x = year_of_interconnection,
        y = "System Size (kW-AC)") + 
   theme_minimal() +
   scale_fill_brewer(palette="Spectral") +
-  theme(legend.position="bottom", 
-        plot.background = element_blank()) +
+  theme(legend.position="bottom") + 
   scale_x_continuous(breaks = 2011:2021) #show all years
 
 # put system size into perspective with population size? kw/household in city? # households in city?
 # panel.background not working
+
+# palette = c("darkgoldenrod2", "brown2", "royalblue3", "deepskyblue3", )
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
