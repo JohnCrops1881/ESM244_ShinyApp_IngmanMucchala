@@ -103,7 +103,7 @@ ui <- dashboardPage(
                 )
               )
       )
-    )
+    ) #end dashboard body
 ) #end dashboard page
 
 
