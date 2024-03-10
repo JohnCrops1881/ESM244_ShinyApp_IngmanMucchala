@@ -81,8 +81,7 @@ ui <- dashboardPage(
               fluidRow(
                 box(
                   title = "Output 4",
-                  "Header: Here, we score and map priority California counties for community solar projects based on energy burden, sunlight, household income, and qualified households.",
-                  "Map: Our Energy Justice Score draws attention to counties that meet multiple priority factors. Scores range from 0 to 4 with 4 identifying counties that meet all cut-offs: 1) energy burden (% of income) >/= 3%; 2) Annual median sunlight >/= 20,000 kWh; 3) household income >= California's median household income of $91,905; 4) percent of households qualified for solar >= 85%. Central California counties stand out with the highest EJ scores, with some Northern and a Southern County also scoring a 4. These are Imperial, Kern, Tulare, Kings, Fresno, Madera, Merced, Stanislaus, San Joaquin, Sutter, and Yuba Counties. Many coastal counties scored zeros due to lower qualification for solar."
+                  "Here, we score and map priority California counties for community solar projects based on energy burden, sunlight, household income, and qualified households."
                 )
               )
       ),
@@ -216,7 +215,7 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
   
-  ## Initializzing data for output 3
+  ## Initializing data for output 3
   cities_sf <- read_sf(here("data", "CA_cities_pts2", "CA_cities_pts2.shp")) %>% 
     janitor::clean_names()
   
@@ -259,6 +258,11 @@ server <- function(input, output) {
         theme_minimal() +
         scale_x_continuous(breaks = 2011:2021) #show all years
     }
+  })
+  
+  output$output3_text <- renderText({
+    # Text output code for Output 3 Map (added bracket and parentheses)
+    "There are only 13 projects, showing there is room for more projects in more counties. Projects are in counties with high solar potential, with the most inland and in Bakersfield County. System size ranges from 0.17 to 20 MW, with a median of 2MW."
   })
   
 }
