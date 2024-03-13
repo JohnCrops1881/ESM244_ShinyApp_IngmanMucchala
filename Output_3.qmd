@@ -90,17 +90,19 @@ tm_layout(title= 'System Size',
 
 ```{r}
 #
-ggplot(data = comm_df, aes(x = year_of_interconnection, 
+Projects_Timeline <- ggplot(data = comm_df, aes(x = year_of_interconnection, 
                            y = system_size_mw_ac, 
                            fill=utility)) +
-  geom_col(color="gray") +
+  geom_col() +
   labs(x = "Year of Interconnection",
        title = "California Community Projects Over Time",
        y = "System Size (kW-AC)") + 
   theme_minimal() +
-  scale_fill_brewer("PurpOr") +
+  scale_fill_manual(values = c("darkgoldenrod2", "brown2", "royalblue3", "deepskyblue3", "springgreen4", "darkslateblue")) +
   theme(legend.position="bottom") + 
   scale_x_continuous(breaks = 2011:2021) #show all years
+
+Projects_Timeline
 
 # put system size into perspective with population size? kw/household in city? # households in city?
 # panel.background not working
@@ -109,3 +111,8 @@ ggplot(data = comm_df, aes(x = year_of_interconnection,
 # Error in if (!palette %in% unlist(brewer)) { : 
 #   the condition has length > 1
 ```
+```{r}
+ggsave("Projects_Timeline.png", Projects_Timeline)
+```
+
+
