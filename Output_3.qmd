@@ -97,7 +97,7 @@ tm_view(view.legend.position = c("right", "top"))+
 tm_layout(title= 'System Size', 
             title.position = c('right', 'top'))
 
-#want single bubble box widget for this
+#want single bubble box widget for this, with counties or system size as default starting layer (cuz points are jittered)
 ```
 
 ```{r}
