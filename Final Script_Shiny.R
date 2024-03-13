@@ -64,7 +64,7 @@ ui <- dashboardPage(
               ),
       tabItem(tabName = "output3",
               fluidPage(
-                titlePanel("Community Solar Analysis"),
+                titlePanel("Community Solar Projects: Timeline, Size, and Location"),
                 # sidebarLayout(
                 #   # sidebarPanel(
                 #   #   selectInput("plotType", "Select Plot Type:",
@@ -216,7 +216,7 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
   
-  ## Initializzing data for output 3
+  ## Initializing data for output 3
   cities_sf <- read_sf(here("data", "CA_cities_pts2", "CA_cities_pts2.shp")) %>% 
     janitor::clean_names()
   

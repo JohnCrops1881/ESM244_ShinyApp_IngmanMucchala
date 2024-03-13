@@ -40,11 +40,20 @@ comm_df %>% st_crs()
 city_comm_sf <- full_join(cities_sf, comm_df, by=c("name"="city")) %>% 
   drop_na(project_name)
 
-View(city_comm_sf)
+#View(city_comm_sf)
 # lost Anza and Herlong, need better city data
 
 Projects <- city_comm_sf %>% 
-  select(project_name, name, lat.x, long, county_fips, utility, utility_type, system_size_k_w_ac, system_size_mw_ac, geometry, population.x)
+  select(project_name, name, county_fips, utility, utility_type, system_size_mw_ac, geometry, population.x, year_of_interconnection) %>% 
+  mutate(year_of_interconnection = as.factor(year_of_interconnection))
+
+Projects_Utility_Type <- city_comm_sf %>% 
+  select(project_name, name, county_fips, utility, utility_type, system_size_mw_ac, geometry, population.x, year_of_interconnection) %>% 
+  mutate(year_of_interconnection = as.factor(year_of_interconnection))
+
+Projects_Year <- city_comm_sf %>% 
+  select(project_name, name, county_fips, utility, utility_type, system_size_mw_ac, geometry, population.x, year_of_interconnection) %>% 
+  mutate(year_of_interconnection = as.factor(year_of_interconnection))
 
 # plot(city_comm_sf_short %>% 
 #        select(system_size_mw_ac)) 
@@ -53,15 +62,11 @@ Projects <- city_comm_sf %>%
 ```{r}
 #| fig-cap: "Community Solar Projects by System Size"
 
-ggplot() + 
-  geom_sf(data = Counties) +
-  geom_sf(data = Projects, aes(color = system_size_mw_ac), size = 2) + # size = border
-  scale_fill_gradientn(colors = c('darkorchid4', 'chocolate1')) + #not working
-  theme_void() +
-  labs(fill = 'System Size (MW-AC)')
-
-# ERROR: WANT POINTS COLORED, MISTAKES WITH NEW CODE:
-# I think unmatched lat/long and county, need x and y which messes that up
+# ggplot() + 
+#   geom_sf(data = Counties) +
+#   geom_sf(data = Projects, aes(color = system_size_mw_ac), size = 2) + # size = border 
+#   theme_void() +
+#   labs(fill = 'System Size (MW-AC)')
 
 # ggplot() + 
 #   geom_sf(data = county_sf) +
@@ -80,12 +85,19 @@ ggplot() +
 tmap_mode("view") 
 
 tm_shape(Counties) + 
-  tm_polygons() +
-tm_shape(Projects) +
-  tm_dots(size = 0.02, palette=('BuGn')) +
+  tm_polygons(alpha=0) + #transparent polygons like tm_borders, but gives names of countries
+  tm_borders(alpha=0.4) +
+tm_shape(Projects_Size) +
+  tm_dots(size = 0.05, jitter = 0.2, col= "system_size_mw_ac", title = "System Size (MW/AC)", palette = "Greens") +
+tm_shape(Projects_Utility_Type) +  
+  tm_dots(size = 0.05, jitter = 0.2, col= "utility_type", title = "Utility Type", palette = "Set2") +
+tm_shape(Projects_Year) +
+  tm_dots(size = 0.05, jitter = 0.2, col= "year_of_interconnection", title = "Year of Interconnection", palette = "GnBu") +
 tm_view(view.legend.position = c("right", "top"))+
 tm_layout(title= 'System Size', 
             title.position = c('right', 'top'))
+
+#want single bubble box widget for this
 ```
 
 ```{r}
@@ -93,10 +105,10 @@ tm_layout(title= 'System Size',
 Projects_Timeline <- ggplot(data = comm_df, aes(x = year_of_interconnection, 
                            y = system_size_mw_ac, 
                            fill=utility)) +
-  geom_col() +
+  geom_col(color="gray") +
   labs(x = "Year of Interconnection",
        title = "California Community Projects Over Time",
-       y = "System Size (kW-AC)") + 
+       y = "System Size (MW-AC)") + 
   theme_minimal() +
   scale_fill_manual(values = c("darkgoldenrod2", "brown2", "royalblue3", "deepskyblue3", "springgreen4", "darkslateblue")) +
   theme(legend.position="bottom") + 
@@ -111,8 +123,9 @@ Projects_Timeline
 # Error in if (!palette %in% unlist(brewer)) { : 
 #   the condition has length > 1
 ```
+
 ```{r}
-ggsave("Projects_Timeline.png", Projects_Timeline)
+#ggsave("Projects_Timeline.png", Projects_Timeline)
 ```
 
 
