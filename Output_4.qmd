@@ -57,24 +57,32 @@ ggplot() +
 ```{r}
 summary(county_sunroof_lead_sf)
 
+# burden: median 3, mean 2.5
+# energy cost: median 2267, mean 2238
+# households: median 70845, mean 222867
+# income: median 86846, mean 98427
+# sunlight: 1232.5, mean 1242.3
+# median sunlight kwh: 19205, mean 18262
+# tot sunlight: 2.07e+09, mean 5.658+09 
+# percent qualified: 92.35, mean 86.61
 ```
 
 ```{r}
 # scores
 EJ_score <- county_sunroof_lead_sf %>% 
-  mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% #
-  mutate(sunlight_score = ifelse(yearly_sunlight_kwh_median>=20000, 1, 0)) %>% 
-  mutate(income_score = ifelse(household_income<=91905, 1, 0)) %>% 
-  mutate(qualified_score = ifelse(percent_qualified>=90, 1, 0)) %>% 
-  mutate(EJ_score = E_burden_score + sunlight_score + income_score + qualified_score) %>% 
+  mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% # median (50th %ile)
+  mutate(sunlight_score = ifelse(yearly_sunlight_kwh_median>=19205, 1, 0)) %>% # median
+  mutate(income_score = ifelse(household_income<=86846, 1, 0)) %>% # median
+  mutate(qualified_score = ifelse(percent_qualified>=92, 1, 0)) %>% #median is 92.35%
+  mutate(EJ_score = E_burden_score + sunlight_score + income_score + qualified_score) %>% # Y/N, add all yes's so larger score = more burden (more median percentile thresholds crossed)
   select(name, geometry, E_burden_score, sunlight_score, income_score, qualified_score, EJ_score) %>% 
-  filter(!st_is_empty(geometry))
+  filter(!st_is_empty(geometry)) #remove the 1 empty geometry
 
 # if want to specifcy thresholds:
 # yearly sunlight total kwh (total solar energy generation potential for all roof space): >10^8 kwh? bias against smaller counties
 # energy burden: 3 or 4%
 # household income: <$91,905 (2022 CA median household income)
-# # households and count qualified (# buildings solar suitable): -> # suitable buildings divided by #households (rough similarity) *100 = %suitable buildings -> >50%? prioritize counties with high solar potential?
+# # households and count qualified (# buildings solar suitable): -> # suitable buildings divided by #households (very rough similarity) *100 = %suitable buildings -> >50%? prioritize counties with high solar potential?
 ```
 
 ```{r}
@@ -94,7 +102,7 @@ CSL_qualified <- county_sunroof_lead_sf %>%
   select(c(geometry, percent_qualified)) %>% 
   filter(!st_is_empty(geometry))
 
-# county_sunroof_lead_score = placeholder thresholds (our score recs)
+# EJ_score = placeholder thresholds (50th%ile "recs")
 ```
 
 ```{r}
@@ -103,23 +111,23 @@ CSL_qualified <- county_sunroof_lead_sf %>%
 tmap_mode("view") 
 
 tm_shape(CSL_energy_burden) + 
-  tm_polygons('energy_burden_percent_income', palette= c("darkorchid4", "chocolate1"), 
+  tm_polygons('energy_burden_percent_income', palette= c("YlGnBu"), 
                            title='Energy Burden (% Income)',
                            border.col='grey27', alpha=1) +
   tm_shape(CSL_sunlight) +
-  tm_polygons('yearly_sunlight_kwh_median', palette= c("darkorchid4", "chocolate1"), 
+  tm_polygons('yearly_sunlight_kwh_median', palette= c("darkolivegreen", "goldenrod2"), 
                            title='Median Annual Sunlight (kWh)',
                            border.col='grey27', alpha=1) +
   tm_shape(CSL_income) +
-  tm_polygons('household_income', palette= c("darkorchid4", "chocolate1"), 
+  tm_polygons('household_income', palette= c("darkolivegreen3", "palegreen4", "lightskyblue4"), 
                            title='Household Income ($)',
                            border.col='grey27', alpha=1) +
   tm_shape(CSL_qualified) +
-  tm_polygons('percent_qualified', palette= c("darkorchid4", "chocolate1"), 
+  tm_polygons('percent_qualified', palette= c("orange4", "burlywood4", "olivedrab3"), 
                            title='Percent of Solar-Qualified Households',
                            border.col='grey27', alpha=1) +
     tm_shape(EJ_score) +
-  tm_polygons('EJ_score', palette= c("YlGnBu"), 
+  tm_polygons('EJ_score', palette= c("skyblue4", "seagreen", "lightgreen"), 
                            title='EJ Score',
                            border.col='grey27', alpha=1) +
   tmap_options(max.categories= 57) +
@@ -128,5 +136,9 @@ tm_shape(CSL_energy_burden) +
             title.position = c('right', 'top'))
 
 # need to get EJ score as discrete on tmap
-# widget: single checkbox
+# widget: radio button OR can you do a toggle for the 4 raw layers (not inlcuding EJ score)?
 ```
+
+
+
+
