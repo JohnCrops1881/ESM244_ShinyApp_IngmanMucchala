@@ -55,10 +55,14 @@ ggplot() +
 ```
 
 ```{r}
-# scores #
+summary(county_sunroof_lead_sf)
 
+```
+
+```{r}
+# scores
 EJ_score <- county_sunroof_lead_sf %>% 
-  mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% 
+  mutate(E_burden_score = ifelse(energy_burden_percent_income>=3, 1, 0)) %>% #
   mutate(sunlight_score = ifelse(yearly_sunlight_kwh_median>=20000, 1, 0)) %>% 
   mutate(income_score = ifelse(household_income<=91905, 1, 0)) %>% 
   mutate(qualified_score = ifelse(percent_qualified>=90, 1, 0)) %>% 
