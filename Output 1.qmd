@@ -5,7 +5,6 @@ format: html
 editor: visual
 ---
 
-
 ## Setting up the libraries
 
 ```{r}
@@ -19,20 +18,34 @@ library(fable)
 ## Loading the utility consumption dataset
 
 ```{r}
+
+# All utilities data 
+
 utility_consum_df <- read_csv(here('data/output 1/elec_by_utility_ca.csv')) %>% 
   janitor::clean_names()
 
-## To see the total consumption per year residential sector
-aggregated_utility_consum <- utility_consum_df %>%
-  filter(utility_type == 'Investor owned utility') %>% 
-  group_by(year) %>%
+
+## These are the  investor owned utilities 
+
+aggregated_all_ious <- utility_consum_df %>% 
+  filter(utility_type == 'Investor owned utility')  %>% 
+  group_by(year) %>% 
   summarize(total_residential = sum(residential))
+
+## These are all other utilities of california without the 3 top utilities for NEM implementation
+aggregated_other_utilities <- utility_consum_df %>% 
+  filter(!utility_type == 'Invester owned utility') %>% 
+  group_by(year) %>% 
+  summarize(total_residential = sum(residential))
+  
 
 ```
 
 ## Loading the nem capacity dataset
 
 ```{r}
+
+## NEM capacity data
 
 nem_capacity_df <- read_csv(here('data/output 1/nem-capacity-chart.csv')) %>% 
   janitor::clean_names() %>% 
@@ -42,51 +55,125 @@ nem_capacity_df <- read_csv(here('data/output 1/nem-capacity-chart.csv')) %>%
 all_years <- data.frame(year = c(1990:2023))
 
 
-# Merge datasets
-utility_nem_df <- merge(all_years, aggregated_utility_consum,
+# Merge datasets for 3 IOUs and NEM
+utility_nem_ious <- merge(all_years, aggregated_all_ious,
                         by = "year", all.x = TRUE) %>%
                   left_join(nem_capacity_df, by = "year") 
 
-utility_nem_df$total_usage_mw <- utility_nem_df$total_residential * 1000
 
-# Plotting the time series with secondary axis
-plot_residential <- ggplot(utility_nem_df, aes(x = year, y = total_usage_mw)) +
+utility_nem_ious$total_ious_mw <- utility_nem_ious$total_residential * 1000
+  
+
+aggregated_other_utilities$total_other_mw <- aggregated_other_utilities$total_residential * 1000
+
+
+
+```
+
+
+```{r}
+
+# Plotting for each scenario residential consumption
+
+plot_ious <- ggplot(utility_nem_ious, aes(x = year, y = total_ious_mw)) +
   geom_line(color = "blue", size = 1) +
-  labs(x = "Year", y = "Residential Consumption (MW)") +
+  labs(x = "Year", y = "Residential Consumption (MW) across all IOUs") +
   theme_minimal()
+
 
 # Plotting NEM capacity
-plot_nem <- ggplot(utility_nem_df, aes(x = year, y = prior_years_capacity)) +
+plot_nem <- ggplot(utility_nem_ious, aes(x = year, y = prior_years_capacity)) +
   geom_line(color = "red", size = 1) +
-  labs(x = "Year", y = "NEM Capacity (MW)") +
+  labs(x = "Year", y = "Rooftop Solar developed through NEM Policy (MW)") +
   theme_minimal()
 
+low_income_solar <- read_csv(here('data','output 1', 'li-capacity-chart.csv')) %>% 
+  pivot_longer(cols = -Category, names_to = "policy", values_to = "values") 
+
+low_income_solar$Category <- as.character(low_income_solar$Category)
+
+plot_li <- ggplot(low_income_solar, aes(x = Category, y = values, fill = policy)) +
+  geom_bar(stat = "identity", position = "stack") +  # Use position = "stack"
+  labs(title = "Rooftop Solar Capacity by Policy and Year (Low-Income)",
+       x = "Year",
+       y = "Rooftop Solar Capacity through low-income policies (MW)",
+       fill = "Policy") +
+  theme_minimal() +
+  scale_x_discrete() 
+
+plot_li
 
 # Combine plots into a grid
 library(cowplot)
-combined_plot <- plot_grid(plot_residential, plot_nem, nrow = 1)
+combined_plot <- plot_grid(plot_ious, plot_nem, plot_li, nrow = 3)
 print(combined_plot)
 
 ```
-##
-
 ```{r}
-ts_data <- ts(utility_nem_df$total_residential, start = c(1990), frequency = 1)
+missing_values <- is.na(utility_nem_ious$capacity_in_year) | !is.numeric(utility_nem_ious$capacity_in_year)
 
-plot_trends <- ggplot(data = data.frame(year = time(ts_data), total_residential = ts_data), aes(x = year, y = total_residential)) +
-  geom_line() +
-  labs(title = "Residential Energy Consumption Trends in California") +
+# Remove rows with missing or non-numeric values
+utility_nem_ious <- utility_nem_ious[!missing_values, ]
+
+# Now try plotting the models again
+# Fit the models
+model1 <- lm(total_ious_mw ~ year + capacity_in_year, data = utility_nem_ious)
+model2 <- lm(total_ious_mw ~ year * capacity_in_year, data = utility_nem_ious)
+model3 <- lm(total_ious_mw ~ -1 + year + capacity_in_year, data = utility_nem_ious)
+
+# Create a dataframe for prediction
+pred_data <- expand.grid(year = seq(min(utility_nem_ious$year), max(utility_nem_ious$year), by = 1),
+                         capacity_in_year = seq(min(utility_nem_ious$capacity_in_year), max(utility_nem_ious$capacity_in_year), length.out = 100))
+
+# Make predictions
+pred_model1 <- predict(model1, newdata = pred_data)
+pred_model2 <- predict(model2, newdata = pred_data)
+pred_model3 <- predict(model3, newdata = pred_data)
+
+# Plot the data and regression lines
+library(ggplot2)
+ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
+  geom_point() +
+  geom_line(data = pred_data, aes(y = pred_model1, color = "Model 1")) +
+  geom_line(data = pred_data, aes(y = pred_model2, color = "Model 2")) +
+  geom_line(data = pred_data, aes(y = pred_model3, color = "Model 3")) +
+  scale_color_manual(values = c("Model 1" = "orange2", "Model 2" = "lightblue", "Model 3" = "darkgreen")) +
+  labs(x = "Capacity in Year", y = "Total IOUs MW", color = "Model") +
   theme_minimal()
-
-plot_trends
-
 ```
 
 
-## Group 1: 3 utilities and Group 2: Other IOUs, look at slope of linear regression across both the groups, compare the slopes to see the statistical different. Is there difference ? Is there simple linear regression
+```{r} 
+effect_size_model1 <- summary(model1)$fstatistic[1] / (summary(model1)$fstatistic[1] + summary(model1)$fstatistic[2])
+effect_size_model2 <- summary(model2)$fstatistic[1] / (summary(model2)$fstatistic[1] + summary(model2)$fstatistic[2])
+effect_size_model3 <- summary(model3)$fstatistic[1] / (summary(model3)$fstatistic[1] + summary(model3)$fstatistic[2])
+
+# Display effect size for each model
+effect_size_model1
+effect_size_model2
+effect_size_model3
+
+library(kableExtra)
+
+# Create a data frame with BIC and effect size for each model
+model_data <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3"),
+  Effect_Size = c(effect_size_model1, effect_size_model2, effect_size_model3)
+)
+
+# Create the table using kableExtra
+table <- kable(model_data, "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# Display the table
+table
+
+```
+
+-   Set of A utilities , in Linear Regression take a interaction terms between utility group A or B \~ year \|f1 \<- energy consum \~ year + group f2\<- energy consum \~ year \* group
+
+-   Give a mechanistic reason for why
 
 
-- Set of A utilities , in Linear Regression take a interaction terms between utility group A or B  ~ year |f1 <-  energy consum ~ year + group
-f2<- energy consum ~ year * group 
 
-- Give a mechanistic reason for why 
+
