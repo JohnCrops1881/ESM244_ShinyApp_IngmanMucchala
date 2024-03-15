@@ -77,7 +77,7 @@ aggregated_other_utilities$total_other_mw <- aggregated_other_utilities$total_re
 
 plot_ious <- ggplot(utility_nem_ious, aes(x = year, y = total_ious_mw)) +
   geom_line(color = "blue", size = 1) +
-  labs(x = "Year", y = "Residential Consumption (MW) across all IOUs") +
+  labs(x = "Year", y = "Residential Consumption (MW) across all SCE, SDGE and PGE") +
   theme_minimal()
 
 
@@ -99,13 +99,20 @@ plot_li <- ggplot(low_income_solar, aes(x = Category, y = values, fill = policy)
        y = "Rooftop Solar Capacity through low-income policies (MW)",
        fill = "Policy") +
   theme_minimal() +
-  scale_x_discrete() 
+  scale_x_discrete() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 plot_li
 
+```
+
+```{r}
+#| label: fig-combinedplot
+#| fig-cap: "The plots(from left to right) represent the following: 1. Historical Total Energy Consumption data across three largest investor owned utilities in California (SCE, SDGE and PGE), 2. Rooftop solar capacity developed across California through NEM Policy under three IOUs territory, 3. Rooftop solar capacity developed across California in low-income communities through various policies under three IOUs territory"
+
 # Combine plots into a grid
 library(cowplot)
-combined_plot <- plot_grid(plot_ious, plot_nem, plot_li, nrow = 3)
+combined_plot <- plot_grid(plot_ious, plot_nem, plot_li, ncols = 3, heights = c(2,2,2))
 print(combined_plot)
 
 ```
@@ -130,6 +137,13 @@ pred_model1 <- predict(model1, newdata = pred_data)
 pred_model2 <- predict(model2, newdata = pred_data)
 pred_model3 <- predict(model3, newdata = pred_data)
 
+```
+
+```{r}
+#| label: fig-model
+#| fig-cap: "The plot represents the linear regression models (Total Energy Consumption ~ Year + Rooftop Solar Capacity (NEM) ) with model 3 showcasing 99% adjusted R^2 values and <0.05 p-value significance of the impacts of NEM rooftop solar development on total energy consumption across SCE, SDGE and PGE."
+
+
 # Plot the data and regression lines
 library(ggplot2)
 ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
@@ -138,7 +152,7 @@ ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
   geom_line(data = pred_data, aes(y = pred_model2, color = "Model 2")) +
   geom_line(data = pred_data, aes(y = pred_model3, color = "Model 3")) +
   scale_color_manual(values = c("Model 1" = "orange2", "Model 2" = "lightblue", "Model 3" = "darkgreen")) +
-  labs(x = "Capacity in Year", y = "Total IOUs MW", color = "Model") +
+  labs(x = "Rooftop Solar Capacity in Year (NEM Policy)", y = "Total three IOUs energy consumption (MW)", color = "Model") +
   theme_minimal()
 ```
 
