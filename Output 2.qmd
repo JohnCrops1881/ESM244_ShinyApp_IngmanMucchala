@@ -13,7 +13,6 @@ library(here)
 
 ```
 
-
 ```{r}
 
 low_income_data <- read_csv(here('data/output 1/li-territory-and-location-chart.csv')) %>%
@@ -28,6 +27,7 @@ nem_policy_data <- read_csv(here('data/output 1/nem-territory-and-location-chart
 
 
 ```
+
 ```{r}
 ui <- fluidPage(
   titlePanel("Solar Capacity Comparison"),
@@ -86,7 +86,7 @@ server <- function(input, output, session) {
       filter(county %in% input$counties)
     
     # Plot for comparing selected counties
-    ggplot(selected_county_data, aes(x = county, y = capacity_kw, fill = county)) +
+    ggplot(selected_county_data, aes(x = county, y = capacity_kw, fill = capacity_kw)) +
       geom_bar(stat = "identity") +
       labs(title = "Solar Capacity by County",
            x = "County", y = "Solar Capacity (kW)") +
@@ -98,4 +98,3 @@ server <- function(input, output, session) {
 # Run the application
 shinyApp(ui = ui, server = server)
 ```
-

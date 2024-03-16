@@ -127,5 +127,3 @@ Projects_Timeline
 ```{r}
 #ggsave("Projects_Timeline.png", Projects_Timeline)
 ```
-
-

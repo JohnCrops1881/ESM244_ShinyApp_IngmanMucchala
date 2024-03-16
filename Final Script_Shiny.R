@@ -1,12 +1,17 @@
 library(shiny)
 library(shinydashboard)
-library(cowplot)
-library(leaflet)
 library(tidyverse)
 library(here)
+library(tsibble)
+library(janitor)
 library(sf)
 library(tmap)
-library(ggplot2)
+library(cowplot)
+library(leaflet)
+library(feasts)
+library(fable)
+library(terra)
+
 
 # Define UI for application
 ui <- dashboardPage(
@@ -102,7 +107,7 @@ ui <- dashboardPage(
                   "Insert citations here"
                 )
               )
-      )
+      ),
     ) #end dashboard body
 ) #end dashboard page
 
@@ -193,7 +198,7 @@ server <- function(input, output) {
     selectInput("counties", "Select Counties:",
                 choices = unique(policy_data$county),
                 multiple = TRUE,
-                selected = selected)
+                selected = unique(policy_data$county))
   })
   
   # Generate plot based on selected policy and counties
@@ -208,12 +213,12 @@ server <- function(input, output) {
       filter(county %in% input$counties)
     
     # Plot for comparing selected counties
-    ggplot(selected_county_data, aes(x = county, y = capacity_kw, fill = county)) +
-      geom_bar(stat = "identity") +
+    ggplot(selected_county_data, aes(x = county, y = capacity_kw, ful = "#48D937")) +
+      geom_bar(stat = "identity", show.legend = FALSE) +
       labs(title = "Solar Capacity by County",
            x = "County", y = "Solar Capacity (kW)") +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
   })
   
   ## Initializing data for output 3

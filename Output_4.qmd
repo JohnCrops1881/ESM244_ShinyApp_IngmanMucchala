@@ -138,7 +138,3 @@ tm_shape(CSL_energy_burden) +
 # need to get EJ score as discrete on tmap
 # widget: radio button OR can you do a toggle for the 4 raw layers (not inlcuding EJ score)?
 ```
-
-
-
-
