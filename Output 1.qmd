@@ -70,7 +70,6 @@ aggregated_other_utilities$total_other_mw <- aggregated_other_utilities$total_re
 
 ```
 
-
 ```{r}
 
 # Plotting for each scenario residential consumption
@@ -116,6 +115,7 @@ combined_plot <- plot_grid(plot_ious, plot_nem, plot_li, ncols = 3, heights = c(
 print(combined_plot)
 
 ```
+
 ```{r}
 missing_values <- is.na(utility_nem_ious$capacity_in_year) | !is.numeric(utility_nem_ious$capacity_in_year)
 
@@ -156,8 +156,7 @@ ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
   theme_minimal()
 ```
 
-
-```{r} 
+```{r}
 effect_size_model1 <- summary(model1)$fstatistic[1] / (summary(model1)$fstatistic[1] + summary(model1)$fstatistic[2])
 effect_size_model2 <- summary(model2)$fstatistic[1] / (summary(model2)$fstatistic[1] + summary(model2)$fstatistic[2])
 effect_size_model3 <- summary(model3)$fstatistic[1] / (summary(model3)$fstatistic[1] + summary(model3)$fstatistic[2])
@@ -187,7 +186,3 @@ table
 -   Set of A utilities , in Linear Regression take a interaction terms between utility group A or B \~ year \|f1 \<- energy consum \~ year + group f2\<- energy consum \~ year \* group
 
 -   Give a mechanistic reason for why
-
-
-
-

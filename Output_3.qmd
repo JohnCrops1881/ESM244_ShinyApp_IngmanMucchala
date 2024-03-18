@@ -87,7 +87,7 @@ tmap_mode("view")
 tm_shape(Counties) + 
   tm_polygons(alpha=0) + #transparent polygons like tm_borders, but gives names of countries
   tm_borders(alpha=0.4) +
-tm_shape(Projects_Size) +
+tm_shape(Projects) +
   tm_dots(size = 0.05, jitter = 0.2, col= "system_size_mw_ac", title = "System Size (MW/AC)", palette = "Greens") +
 tm_shape(Projects_Utility_Type) +  
   tm_dots(size = 0.05, jitter = 0.2, col= "utility_type", title = "Utility Type", palette = "Set2") +
