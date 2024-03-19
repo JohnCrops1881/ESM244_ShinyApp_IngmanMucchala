@@ -47,7 +47,7 @@ ui <- fluidPage(theme = shinytheme('flatly'),
              p("These are our recommendations:"),
              p('Recommendation 1'),
              p('Recommendation 2'),
-             p('Recommendation 3')), #end tab 5
+             p('Recommendation 3: Prioritize Community Solar in counties with the highest EJ scores. These are Imperial, Kern, Tulare, Kings, Fresno, Madera, Merced, Stanislaus, San Joaquin, Sutter, and Yuba Counties.')), #end tab 5
     tabPanel('Data Sources',
              p('Ma, Ookie. (2018). Low-Income Energy Affordability Data - LEAD Tool - 2018 Update. CA 2018 LEAD Data. Accessed 19 February, 2024. https://dx.doi.org/10.25984/1784729.'),
              p('Google. Project Sunroof Data Explorer (June 2019). Accessed 19 February, 2024. https://sunroof.withgoogle.com/data-explorer/place/ChIJPV4oX_65j4ARVW8IJ6IJUYs/'),
