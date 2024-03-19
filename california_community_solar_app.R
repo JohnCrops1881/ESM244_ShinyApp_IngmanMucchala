@@ -26,8 +26,20 @@ ui <- fluidPage(theme = shinytheme('flatly'),
              p('This Shiny App explores the connections between utility energy consumption and adoption of rooftop solar through the lens of energy-equity. On Tab 1, we explore if reduced energy consumption and rising rooftop solar adoption are linked. On Tab 2, we explore the impacts of different solar incentive policies- Low Income and NEM- on California counties by comparing the capacity they have created. On Tab 3, we map California’s current community solar projects and show the timeline of project implementation by utility and system size. On Tab 4, we score and map California counties based on threshods for sunlight, household income, solar qualification status, and energy burden and assign them a priority rating.')
              
              ), #end introduction
-    tabPanel('Deployment', plotOutput('output1_plot'),
+    tabPanel('Deployment', 
+             conditionalPanel(
+               condition = "input.plot == 'Consumption vs Capacity Plot'",
+               plotOutput('combined_plot')
+             ),
+             conditionalPanel(
+               condition = "input.plot == 'Model Plot'",
+               plotOutput('model_plot')
+             ),
+             selectInput("plot", "Select Plot:",
+                         choices = c("Consumption vs Capacity Plot", "Model Plot"),
+                         selected = "Consumption vs Capacity Plot"),
              p("Plots show the residential consumption (MW) and NEM Capacity (MW) over the years.")
+    
              ), #end tab 1
     tabPanel('Policy Comparison', plotOutput('capacity_plot'),
              selectInput("policy", "Select Policy:",
@@ -69,13 +81,10 @@ server <- function(input, output) {
   
 #output 1 data
   
-  # All utilities data 
-  
   utility_consum_df <- read_csv(here('data/output 1/elec_by_utility_ca.csv')) %>% 
     janitor::clean_names()
   
   ## These are the  investor owned utilities 
-  
   aggregated_all_ious <- utility_consum_df %>% 
     filter(utility_type == 'Investor owned utility')  %>% 
     group_by(year) %>% 
@@ -83,49 +92,106 @@ server <- function(input, output) {
   
   ## These are all other utilities of california without the 3 top utilities for NEM implementation
   aggregated_other_utilities <- utility_consum_df %>% 
-    filter(!utility_type == 'Invester owned utility') %>% 
+    filter(!utility_type == 'Investor owned utility') %>% 
     group_by(year) %>% 
     summarize(total_residential = sum(residential))
   
+  # Combine plots into a grid
+  output$combined_plot <- renderPlot({
+    plot_ious <- ggplot(aggregated_all_ious, aes(x = year, y = total_residential)) +
+      geom_line(color = "blue", size = 1) +
+      labs(x = "Year", y = "Residential Consumption (MW) across all SCE, SDGE and PGE") +
+      theme_minimal()
+    
+    plot_nem <- ggplot(aggregated_other_utilities, aes(x = year, y = total_residential)) +
+      geom_line(color = "red", size = 1) +
+      labs(x = "Year", y = "Rooftop Solar developed through NEM Policy (MW)") +
+      theme_minimal()
+    
+    low_income_solar <- read_csv(here('data/output 1/li-capacity-chart.csv')) %>% 
+      pivot_longer(cols = -Category, names_to = "policy", values_to = "values") 
+    
+    low_income_solar$Category <- as.character(low_income_solar$Category)
+    
+    plot_li <- ggplot(low_income_solar, aes(x = Category, y = values, fill = policy)) +
+      geom_bar(stat = "identity", position = "stack") +  # Use position = "stack"
+      labs(title = "Rooftop Solar Capacity by Policy and Year (Low-Income)",
+           x = "Year",
+           y = "Rooftop Solar Capacity through low-income policies (MW)",
+           fill = "Policy") +
+      theme_minimal() +
+      scale_x_discrete() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    
+    cowplot::plot_grid(plot_ious, plot_nem, plot_li, ncols = 3, heights = c(2,2,2))
+  })
   
-#output 1 UI display
+  output$model_plot <- renderUI({
+    plotOutput("model_plot")
+  })
   
-  # Plotting for each scenario residential consumption
+  output$model_plot <- renderPlot({
+    # Loading the nem capacity dataset
+    ## NEM capacity data
+    nem_capacity_df <- read_csv(here('data/output 1/nem-capacity-chart.csv')) %>% 
+      janitor::clean_names() %>% 
+      rename(year = category) %>% 
+      mutate(year = as.integer(year))
+    
+    all_years <- data.frame(year = c(1990:2023))
+    
+    # Merge datasets for 3 IOUs and NEM
+    utility_nem_ious <- merge(all_years, aggregated_all_ious,
+                              by = "year", all.x = TRUE) %>%
+      left_join(nem_capacity_df, by = "year") 
+    
+    utility_nem_ious$total_ious_mw <- utility_nem_ious$total_residential * 1000
+    
+    aggregated_other_utilities$total_other_mw <- aggregated_other_utilities$total_residential * 1000
+    
+    missing_values <- is.na(utility_nem_ious$capacity_in_year) | !is.numeric(utility_nem_ious$capacity_in_year)
+    
+    # Remove rows with missing or non-numeric values
+    utility_nem_ious <- utility_nem_ious[!missing_values, ]
+    
+    # Now try plotting the models again
+    # Fit the models
+    model1 <- lm(total_ious_mw ~ year + capacity_in_year, data = utility_nem_ious)
+    model2 <- lm(total_ious_mw ~ year * capacity_in_year, data = utility_nem_ious)
+    model3 <- lm(total_ious_mw ~ -1 + year + capacity_in_year, data = utility_nem_ious)
+    
+    # Create a dataframe for prediction
+    pred_data <- expand.grid(year = seq(min(utility_nem_ious$year), max(utility_nem_ious$year), by = 1),
+                             capacity_in_year = seq(min(utility_nem_ious$capacity_in_year), max(utility_nem_ious$capacity_in_year), length.out = 100))
+    
+    # Make predictions
+    pred_model1 <- predict(model1, newdata = pred_data)
+    pred_model2 <- predict(model2, newdata = pred_data)
+    pred_model3 <- predict(model3, newdata = pred_data)
+    
+    # Plot the data and regression lines
+    model_plot <- ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
+      geom_point() +
+      geom_line(data = pred_data, aes(y = pred_model1, color = "Model 1")) +
+      geom_line(data = pred_data, aes(y = pred_model2, color = "Model 2")) +
+      geom_line(data = pred_data, aes(y = pred_model3, color = "Model 3")) +
+      scale_color_manual(values = c("Model 1" = "orange2", "Model 2" = "lightblue", "Model 3" = "darkgreen")) +
+      labs(x = "Rooftop Solar Capacity in Year (NEM Policy)", y = "Total three IOUs energy consumption (MW)", color = "Model") +
+      theme_minimal()
+    print(model_plot)
+  })
   
-output$output1_plot <- renderPlot({
-  plot_ious <- ggplot(utility_nem_ious, aes(x = year, y = total_ious_mw)) +
-    geom_line(color = "blue", size = 1) +
-    labs(x = "Year", y = "Residential Consumption (MW) across all SCE, SDGE and PGE") +
-    theme_minimal()
+  # Table display
   
+  output$table_image <- renderImage({
+    filename <- here::here("path/to/your/image.png") # Change this to the path of your image file
+    list(src = filename,
+         alt = "Model Comparison Table",
+         width = "100%",
+         height = "auto")
+  }, deleteFile = FALSE)
   
-  # Plotting NEM capacity
-  plot_nem <- ggplot(utility_nem_ious, aes(x = year, y = prior_years_capacity)) +
-    geom_line(color = "red", size = 1) +
-    labs(x = "Year", y = "Rooftop Solar developed through NEM Policy (MW)") +
-    theme_minimal()
-  
-  low_income_solar <- read_csv(here('data','output 1', 'li-capacity-chart.csv')) %>% 
-    pivot_longer(cols = -Category, names_to = "policy", values_to = "values") 
-  
-  low_income_solar$Category <- as.character(low_income_solar$Category)
-  
-  plot_li <- ggplot(low_income_solar, aes(x = Category, y = values, fill = policy)) +
-    geom_bar(stat = "identity", position = "stack") +  # Use position = "stack"
-    labs(title = "Rooftop Solar Capacity by Policy and Year (Low-Income)",
-         x = "Year",
-         y = "Rooftop Solar Capacity through low-income policies (MW)",
-         fill = "Policy") +
-    theme_minimal() +
-    scale_x_discrete() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-  
-  combined_plot <- plot_ious + plot_nem / plot_li
-  
-  combined_plot
-  
-  
-  }, height = 300, width = 800)
+#}
   
   
 #output 2

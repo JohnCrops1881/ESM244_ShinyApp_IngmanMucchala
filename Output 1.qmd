@@ -146,7 +146,7 @@ pred_model3 <- predict(model3, newdata = pred_data)
 
 # Plot the data and regression lines
 library(ggplot2)
-ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
+model_plot <- ggplot(utility_nem_ious, aes(x = capacity_in_year, y = total_ious_mw)) +
   geom_point() +
   geom_line(data = pred_data, aes(y = pred_model1, color = "Model 1")) +
   geom_line(data = pred_data, aes(y = pred_model2, color = "Model 2")) +
