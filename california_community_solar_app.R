@@ -29,16 +29,19 @@ ui <- fluidPage(theme = shinytheme('flatly'),
     tabPanel('Deployment', 
              conditionalPanel(
                condition = "input.plot == 'Consumption vs Capacity Plot'",
-               plotOutput('combined_plot')
+               plotOutput('combined_plot'),
+               p("Plots show the residential consumption (MW) and NEM Capacity (MW) over the years.")
              ),
              conditionalPanel(
                condition = "input.plot == 'Model Plot'",
-               plotOutput('model_plot')
+               plotOutput('model_plot'),
+               tableOutput('model_table'),
+               p("Plots show the linear regression models across total energy consumption of three IOUs (SCE, SDGE and PGE) in connection to the year and rooftop solar deployment through NEM. The table indicates Model 3 with the largest effective size (0.99) and indicating the impact of rising NEM rooftop solar on energy consumption. The increasing deployment has led to reduced utility consumption with various other factors and leading to utility fixed costs shift on customers without solar. (Dave & Hausmann, 2022).")
              ),
              selectInput("plot", "Select Plot:",
                          choices = c("Consumption vs Capacity Plot", "Model Plot"),
                          selected = "Consumption vs Capacity Plot"),
-             p("Plots show the residential consumption (MW) and NEM Capacity (MW) over the years.")
+             
     
              ), #end tab 1
     tabPanel('Policy Comparison', plotOutput('capacity_plot'),
@@ -57,8 +60,8 @@ ui <- fluidPage(theme = shinytheme('flatly'),
              ), #end tab 4
     tabPanel('Recommendations',
              p("These are our recommendations:"),
-             p('Recommendation 1'),
-             p('Recommendation 2'),
+             p('Recommendation 1: There is a need to prioritize solar development for low-income communities to manage the cost shift burden'),
+             p('Recommendation 2: There needs to be further exploration in terms of what are the other factors beyond NEM Rooftop Solar development impacting the energy consumption of three IOUs'),
              p('Recommendation 3: Prioritize Community Solar in counties with the highest EJ scores. These are Imperial, Kern, Tulare, Kings, Fresno, Madera, Merced, Stanislaus, San Joaquin, Sutter, and Yuba Counties.')), #end tab 5
     tabPanel('Data Sources',
              p('Ma, Ookie. (2018). Low-Income Energy Affordability Data - LEAD Tool - 2018 Update. CA 2018 LEAD Data. Accessed 19 February, 2024. https://dx.doi.org/10.25984/1784729.'),
@@ -183,13 +186,49 @@ server <- function(input, output) {
   
   # Table display
   
-  output$table_image <- renderImage({
-    filename <- here::here("path/to/your/image.png") # Change this to the path of your image file
-    list(src = filename,
-         alt = "Model Comparison Table",
-         width = "100%",
-         height = "auto")
-  }, deleteFile = FALSE)
+  output$model_table <- renderTable({
+    
+    ## NEM capacity data
+    nem_capacity_df <- read_csv(here('data/output 1/nem-capacity-chart.csv')) %>% 
+      janitor::clean_names() %>% 
+      rename(year = category) %>% 
+      mutate(year = as.integer(year))
+    
+    all_years <- data.frame(year = c(1990:2023))
+    
+    # Merge datasets for 3 IOUs and NEM
+    utility_nem_ious <- merge(all_years, aggregated_all_ious,
+                              by = "year", all.x = TRUE) %>%
+      left_join(nem_capacity_df, by = "year") 
+    
+    utility_nem_ious$total_ious_mw <- utility_nem_ious$total_residential * 1000
+    
+    aggregated_other_utilities$total_other_mw <- aggregated_other_utilities$total_residential * 1000
+    
+    missing_values <- is.na(utility_nem_ious$capacity_in_year) | !is.numeric(utility_nem_ious$capacity_in_year)
+    
+    # Remove rows with missing or non-numeric values
+    utility_nem_ious <- utility_nem_ious[!missing_values, ]
+    
+    # Now try plotting the models again
+    # Fit the models
+    model1 <- lm(total_ious_mw ~ year + capacity_in_year, data = utility_nem_ious)
+    model2 <- lm(total_ious_mw ~ year * capacity_in_year, data = utility_nem_ious)
+    model3 <- lm(total_ious_mw ~ -1 + year + capacity_in_year, data = utility_nem_ious)
+    
+    effect_size_model1 <- summary(model1)$fstatistic[1] / (summary(model1)$fstatistic[1] + summary(model1)$fstatistic[2])
+    effect_size_model2 <- summary(model2)$fstatistic[1] / (summary(model2)$fstatistic[1] + summary(model2)$fstatistic[2])
+    effect_size_model3 <- summary(model3)$fstatistic[1] / (summary(model3)$fstatistic[1] + summary(model3)$fstatistic[2])
+    
+    # Create a data frame with BIC and effect size for each model
+    model_data <- data.frame(
+      Model = c("Model 1", "Model 2", "Model 3"),
+      Effect_Size = c(effect_size_model1, effect_size_model2, effect_size_model3)
+    )
+    
+    # Return the data frame
+    model_data
+  })
   
 #}
   
