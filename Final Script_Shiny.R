@@ -15,14 +15,14 @@ library(terra)
 
 # Define UI for application
 ui <- dashboardPage(
-  dashboardHeader(title = "Community Solar App"),
+  dashboardHeader(title = "California Community Solar Analysis"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Intro", tabName = "intro"),
-      menuItem("Output 1", tabName = "output1"),
-      menuItem("Output 2", tabName = "output2"),
-      menuItem("Output 3", tabName = "output3"),
-      menuItem("Output 4", tabName = "output4"),
+      menuItem("Introduction", tabName = "intro"),
+      menuItem("Deployment", tabName = "output1"),
+      menuItem("Policy Comparison", tabName = "output2"),
+      menuItem("Project Map", tabName = "output3"),
+      menuItem("EJ Score & Solar Suitability", tabName = "output4"),
       menuItem("Recommendations", tabName = "recommendations"),
       menuItem("Citations", tabName = "citations")
     )
@@ -70,12 +70,6 @@ ui <- dashboardPage(
       tabItem(tabName = "output3",
               fluidPage(
                 titlePanel("Community Solar Projects: Timeline, Size, and Location"),
-                # sidebarLayout(
-                #   # sidebarPanel(
-                #   #   selectInput("plotType", "Select Plot Type:",
-                #   #               choices = c("tmap", "ggplot2"),
-                #   #               selected = "tmap")
-                #   ),
                   mainPanel(
                     tmapOutput("community_plot")
                 ) #end main panel
@@ -103,8 +97,7 @@ ui <- dashboardPage(
       tabItem(tabName = "citations",
               fluidRow(
                 box(
-                  title = "Citations",
-                  "Insert citations here"
+                  title = "Citations"
                 )
               )
       ),
