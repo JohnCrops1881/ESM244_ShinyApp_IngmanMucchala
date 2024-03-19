@@ -22,7 +22,8 @@ ui <- fluidPage(theme = shinytheme('flatly'),
     type = 'tabs',
     tabPanel("Introduction",
              p('California leads the United States in terms of both solar potential and progressive environmental policy. However, not all Californians benefit equally from both the solar potential and the progressive policies. Through its solar policy over time, California has created a utility-driven energy-equity problem that increases energy burden on low-and-middle income households.'),
-             p('This Shiny App explores the connections between utility energy consumption and adoption of rooftop solar through the lens of energy-equity. On Tab 1, we explore if reduced energy consumption and rising rooftop solar adoption are linked. On Tab 2, we explore the impacts of different solar incentive policies- Low Income and NEM- on California counties by comparing the capacity they have created. On Tab 3, we map California’s current community solar projects. On Tab 4, we score and map California counties based on sunlight, household income, solar qualification status, and energy burden and assign them a priority rating.')
+             p('We aim to visualize the solar energy status quo and where opportunities for community solar lie. This app is intended for policy reachers and advocates along with anyone working with community solar projects (developers, community organizations, and advocates).'),
+             p('This Shiny App explores the connections between utility energy consumption and adoption of rooftop solar through the lens of energy-equity. On Tab 1, we explore if reduced energy consumption and rising rooftop solar adoption are linked. On Tab 2, we explore the impacts of different solar incentive policies- Low Income and NEM- on California counties by comparing the capacity they have created. On Tab 3, we map California’s current community solar projects and show the timeline of project implementation by utility and system size. On Tab 4, we score and map California counties based on threshods for sunlight, household income, solar qualification status, and energy burden and assign them a priority rating.')
              
              ), #end introduction
     tabPanel('Deployment', plotOutput('output1_plot'),
@@ -47,12 +48,13 @@ ui <- fluidPage(theme = shinytheme('flatly'),
              p('Recommendation 1'),
              p('Recommendation 2'),
              p('Recommendation 3')), #end tab 5
-    tabPanel('Citations',
-             p('Citation 1'),
-             p('Citation 2'),
-             p('Citation 3'),
-             p('Citation 4'),
-             ) #end tab 6    
+    tabPanel('Data Sources',
+             p('Ma, Ookie. (2018). Low-Income Energy Affordability Data - LEAD Tool - 2018 Update. CA 2018 LEAD Data. Accessed 19 February, 2024. https://dx.doi.org/10.25984/1784729.'),
+             p('Google. Project Sunroof Data Explorer (June 2019). Accessed 19 February, 2024. https://sunroof.withgoogle.com/data-explorer/place/ChIJPV4oX_65j4ARVW8IJ6IJUYs/'),
+             p('“California - Historical Population Data”. Macrotrends. Accessed 19 February 2024. https://www.macrotrends.net/states/california/population'),
+             p('Energy Consumption Database. (n.d.). Retrieved March 10, 2024, from https://ecdms.energy.ca.gov/'),
+             p("CaliforniaDGStats. (n.d.). Retrieved March 10, 2024, from https://www.californiadgstats.ca.gov/charts/"),
+             p("California Cities (May 2018). Accessed March 10, 2024, from https://hub.arcgis.com/datasets/06ce85b6fdf349d78c471d7c2ee8cb66_0/explore"))  #end tab 6    
     ) #end tabsetPanel  
         
   ) #end mainPanel
