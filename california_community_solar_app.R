@@ -11,10 +11,11 @@ library(leaflet)
 library(feasts)
 library(fable)
 library(terra)
+library(shinythemes)
 
 
 #UI for app
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme('flatly'),
   titlePanel('California Community Solar Analysis'),
   mainPanel(
     tabsetPanel(
