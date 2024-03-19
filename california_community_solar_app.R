@@ -52,12 +52,19 @@ ui <- fluidPage(theme = shinytheme('flatly'),
              ), #end tab 2
     tabPanel('Project Map', 
              tmapOutput('community_plot'),
-             plotOutput('projects_timeline')
+             plotOutput('projects_timeline'),
+             p("With only 13 community solar projects in California, there is room for more 
+             projects in more counties. Projects are in counties with high solar potential, with the most inland and in Bakersfield County. Usually a community solar project’s capacity is up to 5 MW, which is reflected here. System size ranges from 0.17 to 20 MW, with a median of 2MW and the largest capacity projects south in Imperial County. Most projects are investor-owned, including all of the Central Valley. Most projects were developed in 2018, with Riverside County holding both the oldest and most recent projects. 
+"),
+             imageOutput("image"),
+             p("This bar chart shows California Community Projects between 2011 and 2021, by system size (kW-AC) and utility. The number and capacity of total projects is not increasing steadily over time as expected. There is generally one smaller-sized project every one to three years, with 2018 as an outlier with 8 projects. In 2018, Governor Brown signed Senate Bill 100, which set a target of providing 100% of the state’s electricity from carbon-free sources by 2045. Investor-owned Pacific Gas & Electric Co. developed the most projects (7), particularly AES Distributed Energy Inc. (4). Investor-owned San Diego Gas & Electric Co. developed the largest, outlier project (20 MW). PG&E serves the largest area, and it is surprising that Southern California Edison does not have a community solar project in this time because they serve a large area, with large counties in high-solar-energy desert.
+")
              ), #end tab 3
     tabPanel('EJ Score & Solar Suitability', 
              tmapOutput('ej_map'),
-             p("County Energy Justice Score. Counties in gray do not have data for median sunlight or percent of households qualified, meaning we cannot assign a comparative EJ score. However, scores for energy burden and household income are available.")
-             ), #end tab 4
+             p("County Energy Justice Score. Counties in gray do not have data for median sunlight or percent of households qualified, meaning we cannot assign a comparative EJ score. However, scores for energy burden and household income are available."),
+    p("Our Energy Justice Score draws attention to counties that meet multiple priority factors. Scores range from 0 to 4 with 4 identifying counties that surpass a 50th percentile threshold: 1) energy burden (% of income) >/= 3%; 2) Annual median sunlight >/= 19,205 kWh; 3) household income >= household income of 86,846 (lower than California’s median household income of $91,905); 4) percent of households qualified for solar >= 92%. Central California counties stand out with the highest EJ scores, with some Northern and a Southern County also scoring a 4. These are Imperial, Kern, Tulare, Kings, Fresno, Madera, Merced, Stanislaus, San Joaquin, Sutter, and Yuba Counties. Many coastal counties scored zeros due to lower qualification for solar. ")
+    ), #end tab 4
     tabPanel('Recommendations',
              p("These are our recommendations:"),
              p('Recommendation 1: There is a need to prioritize solar development for low-income communities to manage the cost shift burden'),
@@ -368,7 +375,11 @@ output$community_plot <- renderTmap({
     tm_layout(title= 'System Size', 
               title.position = c('right', 'top'))
   
-}) #end output 3 tMap
+}) 
+
+output$image <- renderImage({
+  list(src = "Users/meetmuchhala/Desktop/Winter 2024/ESM244_ShinyApp_IngmanMucchalaRuggles/Projects_Timeline.png", contentType = "image/png")
+})#end output 3 tMap
 
 
   
